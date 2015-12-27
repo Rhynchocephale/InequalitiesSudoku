@@ -1,6 +1,7 @@
 import itertools
 from time import sleep
 import numpy as np
+from random import randint
 
 numbers = '123456789'
 subsquares = [0,3,6]
@@ -13,12 +14,7 @@ def randomGrid():
 	grid = [[0 for x in range(9)] for x in range(9)]
 	for firstRow in subsquares:
 		for firstCol in subsquares:
-			square = ''.join(np.random.permutation(list(numbers)))
-			i = 0
-			for row in [x + firstRow for x in range(3)]:
-				for col in [x + firstCol for x in range(3)]:
-					grid[row][col] = square[i]
-					i += 1
+			randomizeSquare(grid, firstRow, firstCol)
 	return np.array(grid)
 
 def grid2string(grid):
@@ -57,14 +53,17 @@ def checkValid(grid):
 		
 	
 def swapNumbers():
-		
+	grid = randomGrid()	
 	retries = 0
 	while(True):
-		grid = randomGrid()
 		swapped = 1
 		iterations = 0
 		totalSwaps = -1
-		grid = randomGrid()
+		
+		for i in range(2):
+			row = subsquares[randint(0,2)]
+			col = subsquares[randint(0,2)]
+			randomizeSquare(grid, row, col)
 		
 		while(swapped > 0):
 			swapped = 0
@@ -101,6 +100,15 @@ def swapNumbers():
 		if(checkValid(grid)):
 			print(grid2string(grid))
 			return 0
+			
+def randomizeSquare(grid,firstRow,firstCol):
+	square = ''.join(np.random.permutation(list(numbers)))
+	i = 0
+	for row in [x + firstRow for x in range(3)]:
+		for col in [x + firstCol for x in range(3)]:
+			grid[row][col] = square[i]
+			i += 1
+	return grid
 
 #print(grid2string(randomGrid()))
 swapNumbers()
