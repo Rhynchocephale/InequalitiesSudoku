@@ -53,12 +53,7 @@ def checkValid(grid):
 	
 def swapNumbers():
 	grid = randomGrid()
-	for i in range(9):
-		solveSquare(grid, i)
-		
-	if(checkValid(grid)):
-		print(grid2string(grid))
-		return 0
+	subsquaresList = set(range(9))
 
 	retries = 0
 
@@ -66,11 +61,11 @@ def swapNumbers():
 		swapped = 1
 		iterations = 0
 		totalSwaps = -1
-		subsquaresList = [0,0]
 		
 		for i in range(2):
-			subsquaresList[i] = randint(0,8)
-			subsquare = subsquares[subsquaresList[i]]
+			newPos = randint(0,8) #risque duplicata
+			subsquaresList.add(newPos) #set, pas list, donc pas de duplicata, donc sava
+			subsquare = subsquares[newPos]
 			grid = randomizeSquare(grid, subsquare)
 		
 		while(swapped > 0):
@@ -81,12 +76,12 @@ def swapNumbers():
 				grid = pack[0]
 				swaps = pack[1]
 				if(swaps == 0):
-					subsquaresList = [p for p in subsquaresList if p != pos]
+					subsquaresList = set([p for p in subsquaresList if p != pos])
 				swapped += swaps
 						
 			iterations += 1
 			totalSwaps += swapped
-			if iterations > 5:
+			if iterations > 10:
 				break
 		
 		print('Retries: '+str(retries)+', Iterations: '+str(iterations)+', Total swaps: '+str(totalSwaps))
@@ -117,6 +112,7 @@ def solveSquare(grid, pos):
 				tmp = grid[row][col]
 				grid[row][col] = grid[row][col+1]
 				grid[row][col+1] = tmp
+				print('Hori: '+str(grid[row][col])+(' < ',' > ')[ineqHori[row][2*subsquare[0]/3+i]]+str(grid[row][col+1]))
 			i += 1
 	
 	for col in [x + subsquare[1] for x in range(3)]:		
@@ -127,6 +123,7 @@ def solveSquare(grid, pos):
 				tmp = grid[row][col]
 				grid[row][col] = grid[row+1][col]
 				grid[row+1][col] = tmp
+				print('Vert: '+str(grid[row][col])+(' < ',' > ')[ineqVert[2*subsquare[1]/3+i][col]]+str(grid[row+1][col]))
 			i += 1
 
 	return (grid, swapped)
