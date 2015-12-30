@@ -82,6 +82,8 @@ def swapNumbers():
 			iterations += 1
 			totalSwaps += swapped
 			if iterations > 10:
+				print(visuGrid(grid))
+				sleep(50)
 				break
 		
 		print('Retries: '+str(retries)+', Iterations: '+str(iterations)+', Total swaps: '+str(totalSwaps))
@@ -112,7 +114,7 @@ def solveSquare(grid, pos):
 				tmp = grid[row][col]
 				grid[row][col] = grid[row][col+1]
 				grid[row][col+1] = tmp
-				print('Hori: '+str(grid[row][col])+(' < ',' > ')[ineqHori[row][2*subsquare[0]/3+i]]+str(grid[row][col+1]))
+				#print('Hori: '+str(grid[row][col])+(' < ',' > ')[ineqHori[row][2*subsquare[0]/3+i]]+str(grid[row][col+1]))
 			i += 1
 	
 	for col in [x + subsquare[1] for x in range(3)]:		
@@ -123,10 +125,31 @@ def solveSquare(grid, pos):
 				tmp = grid[row][col]
 				grid[row][col] = grid[row+1][col]
 				grid[row+1][col] = tmp
-				print('Vert: '+str(grid[row][col])+(' < ',' > ')[ineqVert[2*subsquare[1]/3+i][col]]+str(grid[row+1][col]))
+				#print('Vert: '+str(grid[row][col])+(' < ',' > ')[ineqVert[2*subsquare[1]/3+i][col]]+str(grid[row+1][col]))
 			i += 1
 
 	return (grid, swapped)
+
+def visuGrid(grid):
+	mystr = ''
+	i = 0
+	for row in range(9):
+		#line of numbers and ineqHori
+		mystr += str(grid[row][0])+('<','>')[ineqHori[row][0]]+str(grid[row][1])+('<','>')[ineqHori[row][1]]+str(grid[row][2])+'|'
+		mystr += str(grid[row][3])+('<','>')[ineqHori[row][2]]+str(grid[row][4])+('<','>')[ineqHori[row][3]]+str(grid[row][5])+'|'
+		mystr += str(grid[row][6])+('<','>')[ineqHori[row][4]]+str(grid[row][7])+('<','>')[ineqHori[row][5]]+str(grid[row][8])+'\n'
+		if(row%3 != 2):
+			print('i: '+str(i))
+			#line of ineqVert
+			mystr += ('^','v')[ineqVert[i][0]]+' '+('^','v')[ineqVert[i][1]]+' '+('^','v')[ineqVert[i][2]]+'|'
+			mystr += ('^','v')[ineqVert[i][3]]+' '+('^','v')[ineqVert[i][4]]+' '+('^','v')[ineqVert[i][5]]+'|'
+			mystr += ('^','v')[ineqVert[i][6]]+' '+('^','v')[ineqVert[i][7]]+' '+('^','v')[ineqVert[i][8]]+'\n'
+			i += 1	
+		else:
+			if row != 8:
+				mystr += '-----------------\n'
+
+	return mystr
 
 #print(grid2string(randomGrid()))
 swapNumbers()
