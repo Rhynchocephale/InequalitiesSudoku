@@ -9,7 +9,9 @@ subsquares = [[0,0],[0,3],[0,6],[3,0],[3,3],[3,6],[6,0],[6,3],[6,6]]
 #inequalities, line by line. 0 for <, 1 for >
 ineqHori = [[0,1,0,0,0,1],[1,0,0,1,1,1],[0,1,1,1,0,1],[1,1,1,1,0,1],[1,0,0,1,0,1],[1,1,0,0,1,0],[1,0,1,0,1,0],[1,1,0,1,1,0],[0,1,0,1,0,0]]
 #line by line, 0 for ^, 1 for v
-ineqVert = [[1,1,0,0,0,1,0,1,1],[1,0,1,0,1,1,1,0,1],[0,1,0,1,1,0,0,0,1],[1,0,0,1,1,0,1,1,0],[1,1,1,0,0,1,1,1,0],[1,0,0,1,1,1,1,0,1]]
+ineqVert = [[1,1,0,0,0,1,0,1,1],[1,0,1,0,1,1,1,0,0],[0,1,0,1,1,0,0,0,1],[1,0,0,1,1,0,1,1,0],[1,1,1,0,0,1,1,1,0],[1,0,0,1,1,1,1,0,1]]
+
+clues = [[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]]
 
 def randomGrid():
 	grid = [[0 for x in range(9)] for x in range(9)]
@@ -42,25 +44,21 @@ def checkSquares(grid):
 	return True
 
 def checkValid(grid):
-	lines = checkLines(grid)
-	if lines != 10:
-		return False
-	squares = checkSquares(grid)
-	if squares != 10:
-		return False
-	return True
+	if checkLines(grid) and checkSquares(grid):
+		return True
+	return False
 		
-	
 def swapNumbers():
-	grid = randomGrid()
-	subsquaresList = set(range(9))
-
 	retries = 0
 
 	while(True):
 		swapped = 1
 		iterations = 0
 		totalSwaps = -1
+		
+		if retries%10000 == 0:
+			grid = randomGrid()
+			subsquaresList = set(range(9))
 		
 		for i in range(2):
 			newPos = randint(0,8) #risque duplicata
@@ -81,9 +79,7 @@ def swapNumbers():
 						
 			iterations += 1
 			totalSwaps += swapped
-			if iterations > 10:
-				print(visuGrid(grid))
-				sleep(50)
+			if iterations > 20:
 				break
 		
 		print('Retries: '+str(retries)+', Iterations: '+str(iterations)+', Total swaps: '+str(totalSwaps))
@@ -94,12 +90,24 @@ def swapNumbers():
 			return 0
 			
 def randomizeSquare(grid,subsquare):
-	square = ''.join(np.random.permutation(list(numbers)))
+	
+	#finding out what and where clues are
+	listOfClues = []
+	for row in [x + subsquare[0] for x in range(3)]:
+		for col in [x + subsquare[1] for x in range(3)]:
+			if clues[row][col]:
+				grid[row][col] = clues[row][col]
+				listOfClues.append(clues[row][col])
+	
+	numbersMinusHints = [a for a in numbers if a not in listOfClues]
+	
+	square = ''.join(np.random.permutation(list(numbersMinusHints)))
 	i = 0
 	for row in [x + subsquare[0] for x in range(3)]:
 		for col in [x + subsquare[1] for x in range(3)]:
-			grid[row][col] = square[i]
-			i += 1
+			if not clues[row][col]:
+				grid[row][col] = square[i]
+				i += 1
 	return grid
 	
 def solveSquare(grid, pos):
@@ -109,22 +117,26 @@ def solveSquare(grid, pos):
 	for row in [x + subsquare[0] for x in range(3)]:
 		i = 0
 		for col in [x + subsquare[1] for x in range(2)]:
-			if (grid[row][col] > grid[row][col+1]) != ineqHori[row][2*subsquare[0]/3+i]:
-				swapped += 1
-				tmp = grid[row][col]
-				grid[row][col] = grid[row][col+1]
-				grid[row][col+1] = tmp
+			if (grid[row][col] > grid[row][col+1]) != ineqHori[row][2*subsquare[0]/3+i] and not clues[row][col] and not clues[row][col+1]:
+				doIt = randint(0,1)
+				if doIt:
+					swapped += 1
+					tmp = grid[row][col]
+					grid[row][col] = grid[row][col+1]
+					grid[row][col+1] = tmp
 				#print('Hori: '+str(grid[row][col])+(' < ',' > ')[ineqHori[row][2*subsquare[0]/3+i]]+str(grid[row][col+1]))
 			i += 1
 	
 	for col in [x + subsquare[1] for x in range(3)]:		
 		i = 0	
 		for row in [x + subsquare[0] for x in range(2)]:
-			if (grid[row][col] > grid[row+1][col]) != ineqVert[2*subsquare[1]/3+i][col]:
-				swapped += 1
-				tmp = grid[row][col]
-				grid[row][col] = grid[row+1][col]
-				grid[row+1][col] = tmp
+			if (grid[row][col] > grid[row+1][col]) != ineqVert[2*subsquare[1]/3+i][col] and not clues[row][col] and not clues[row+1][col]:
+				doIt = randint(0,1)
+				if doIt:
+					swapped += 1
+					tmp = grid[row][col]
+					grid[row][col] = grid[row+1][col]
+					grid[row+1][col] = tmp
 				#print('Vert: '+str(grid[row][col])+(' < ',' > ')[ineqVert[2*subsquare[1]/3+i][col]]+str(grid[row+1][col]))
 			i += 1
 
@@ -139,7 +151,6 @@ def visuGrid(grid):
 		mystr += str(grid[row][3])+('<','>')[ineqHori[row][2]]+str(grid[row][4])+('<','>')[ineqHori[row][3]]+str(grid[row][5])+'|'
 		mystr += str(grid[row][6])+('<','>')[ineqHori[row][4]]+str(grid[row][7])+('<','>')[ineqHori[row][5]]+str(grid[row][8])+'\n'
 		if(row%3 != 2):
-			print('i: '+str(i))
 			#line of ineqVert
 			mystr += ('^','v')[ineqVert[i][0]]+' '+('^','v')[ineqVert[i][1]]+' '+('^','v')[ineqVert[i][2]]+'|'
 			mystr += ('^','v')[ineqVert[i][3]]+' '+('^','v')[ineqVert[i][4]]+' '+('^','v')[ineqVert[i][5]]+'|'
