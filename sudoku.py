@@ -2,16 +2,43 @@ import itertools
 from time import sleep
 import numpy as np
 from random import randint
-from copy import deepcopy
 
 numbers = '123456789'
 subsquares = [[0,0],[0,3],[0,6],[3,0],[3,3],[3,6],[6,0],[6,3],[6,6]]
+
+
+#Olivia
+ineqHori = [[1,0,1,0,0,0],[1,0,0,1,0,0],[1,1,1,0,0,1],[0,1,0,1,0,1],[0,0,1,1,0,1],[1,1,0,1,1,0],[0,1,0,0,0,0],[1,1,1,1,1,0],[0,1,0,0,1,1]]
+ineqVert = [[1,1,0,0,0,1,1,1,1],[0,0,1,0,1,1,1,0,1],[1,1,0,0,1,0,0,0,1],[0,0,1,1,0,1,0,1,0],[1,1,1,0,0,1,0,1,0],[0,0,0,1,1,0,1,1,1]]
+
+#Clement
+'''
 #inequalities, line by line. 0 for <, 1 for >
 ineqHori = [[0,1,0,0,0,1],[1,0,0,1,1,1],[0,1,1,1,0,1],[1,1,1,1,0,1],[1,0,0,1,0,1],[1,1,0,0,1,0],[1,0,1,0,1,0],[1,1,0,1,1,0],[0,1,0,1,0,0]]
 #line by line, 0 for ^, 1 for v
 ineqVert = [[1,1,0,0,0,1,0,1,1],[1,0,1,0,1,1,1,0,0],[0,1,0,1,1,0,0,0,1],[1,0,0,1,1,0,1,1,0],[1,1,1,0,0,1,1,1,0],[1,0,0,1,1,1,1,0,1]]
+'''
 
-clues = [[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]]
+clues = [[0,0,0,0,1,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,0,0],[0,0,0,0,0,1,0,0,0],[1,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,1,0],[0,0,0,1,0,0,0,0,0],[0,0,1,0,0,0,0,0,0],[0,0,0,0,0,0,0,2,1]]
+unclues = []
+emptyValue_unclues = set([0])
+
+def fillUnclues():
+	global unclues
+	
+	unclues = [[set() for x in range(9)] for x in range(9)]
+	
+	for xClues in range(9):
+		for yClues in range(9):
+			if clues[xClues][yClues]:
+				for rowCol in range(9):
+					if unclues[xClues][rowCol] != emptyValue_unclues:
+						unclues[xClues][rowCol].add(clues[xClues][yClues])
+					if unclues[rowCol][yClues] != emptyValue_unclues:
+						unclues[rowCol][yClues].add(clues[xClues][yClues])
+				unclues[xClues][yClues] = emptyValue_unclues
+	
+	return 0
 
 def randomGrid():
 	grid = [[0 for x in range(9)] for x in range(9)]
@@ -29,8 +56,9 @@ def grid2string(grid):
 
 
 def checkLines(grid):
+	transposed = grid.transpose()
 	for line in range(9):
-		if ''.join(sorted(''.join(grid.transpose()[line]))) != numbers or ''.join(sorted(''.join(grid[line]))) != numbers:
+		if ''.join(sorted(''.join(transposed[line]))) != numbers or ''.join(sorted(''.join(grid[line]))) != numbers:
 			return False
 	return True
 	
@@ -44,10 +72,8 @@ def checkSquares(grid):
 	return True
 
 def checkValid(grid):
-	if checkLines(grid) and checkSquares(grid):
-		return True
-	return False
-		
+	return checkLines(grid)
+				
 def swapNumbers():
 	retries = 0
 
@@ -60,7 +86,7 @@ def swapNumbers():
 			grid = randomGrid()
 			subsquaresList = set(range(9))
 		
-		for i in range(2):
+		for i in range(3):
 			newPos = randint(0,8) #risque duplicata
 			subsquaresList.add(newPos) #set, pas list, donc pas de duplicata, donc sava
 			subsquare = subsquares[newPos]
@@ -73,41 +99,60 @@ def swapNumbers():
 				pack = solveSquare(grid, pos)
 				grid = pack[0]
 				swaps = pack[1]
-				if(swaps == 0):
+				if not swaps:
 					subsquaresList = set([p for p in subsquaresList if p != pos])
 				swapped += swaps
 						
 			iterations += 1
 			totalSwaps += swapped
+			
 			if iterations > 20:
+				#print(visuGrid(grid))
+				#sleep(50)
 				break
 		
 		print('Retries: '+str(retries)+', Iterations: '+str(iterations)+', Total swaps: '+str(totalSwaps))
 		retries += 1
 
 		if(checkValid(grid)):
-			print(grid2string(grid))
+			f = open('/home/clement/SOLUTION.txt','w')
+			f.write(visuGrid(grid))
+			f.close()
 			return 0
 			
 def randomizeSquare(grid,subsquare):
 	
-	#finding out what and where clues are
-	listOfClues = []
-	for row in [x + subsquare[0] for x in range(3)]:
-		for col in [x + subsquare[1] for x in range(3)]:
-			if clues[row][col]:
-				grid[row][col] = clues[row][col]
-				listOfClues.append(clues[row][col])
+	isOk = False
 	
-	numbersMinusHints = [a for a in numbers if a not in listOfClues]
-	
-	square = ''.join(np.random.permutation(list(numbersMinusHints)))
-	i = 0
-	for row in [x + subsquare[0] for x in range(3)]:
-		for col in [x + subsquare[1] for x in range(3)]:
-			if not clues[row][col]:
-				grid[row][col] = square[i]
-				i += 1
+	while not isOk:
+		isOk = True
+		
+		#finding out what and where clues are
+		listOfClues = ''
+		for row in [x + subsquare[0] for x in range(3)]:
+			for col in [x + subsquare[1] for x in range(3)]:
+				if clues[row][col]:
+					grid[row][col] = clues[row][col]
+					listOfClues += str(clues[row][col])
+		
+		numbersMinusHints = [a for a in numbers if a not in listOfClues]
+		
+		#filling the not-already-known places with numbers
+		square = ''.join(np.random.permutation(list(numbersMinusHints)))
+		i = 0
+		for row in [x + subsquare[0] for x in range(3)]:
+			for col in [x + subsquare[1] for x in range(3)]:
+				if not clues[row][col]:
+					grid[row][col] = square[i]
+					i += 1
+					
+		#checking against unclues
+		for row in [x + subsquare[0] for x in range(3)]:
+			if isOk:
+				for col in [x + subsquare[1] for x in range(3)]:
+					if unclues[row][col] != emptyValue_unclues and grid[row][col] in unclues[row][col]:
+						isOk = False
+						break
 	return grid
 	
 def solveSquare(grid, pos):
@@ -117,7 +162,7 @@ def solveSquare(grid, pos):
 	for row in [x + subsquare[0] for x in range(3)]:
 		i = 0
 		for col in [x + subsquare[1] for x in range(2)]:
-			if (grid[row][col] > grid[row][col+1]) != ineqHori[row][2*subsquare[0]/3+i] and not clues[row][col] and not clues[row][col+1]:
+			if (grid[row][col] > grid[row][col+1]) != ineqHori[row][2*subsquare[0]/3+i] and not clues[row][col] and not clues[row][col+1] and not grid[row][col] in unclues[row][col+1] and not grid[row][col+1] in unclues[row][col]:
 				doIt = randint(0,1)
 				if doIt:
 					swapped += 1
@@ -130,7 +175,7 @@ def solveSquare(grid, pos):
 	for col in [x + subsquare[1] for x in range(3)]:		
 		i = 0	
 		for row in [x + subsquare[0] for x in range(2)]:
-			if (grid[row][col] > grid[row+1][col]) != ineqVert[2*subsquare[1]/3+i][col] and not clues[row][col] and not clues[row+1][col]:
+			if (grid[row][col] > grid[row+1][col]) != ineqVert[2*subsquare[1]/3+i][col] and not clues[row][col] and not clues[row+1][col] and not grid[row][col] in unclues[row+1][col] and not grid[row+1][col] in unclues[row][col]:
 				doIt = randint(0,1)
 				if doIt:
 					swapped += 1
@@ -162,6 +207,7 @@ def visuGrid(grid):
 
 	return mystr
 
-#print(grid2string(randomGrid()))
+fillUnclues()
 swapNumbers()
-#print(checkLines(randomGrid()))
+#grid = [['9','1','8','3','2','6','7','5','4'],['3','4','6','5','1','7','9','2','8'],['7','2','5','8','9','4','1','3','6'],['1','5','3','2','4','8','6','9','7'],['8','9','4','6','7','5','3','1','2'],['2','6','7','9','3','1','4','8','5'],['5','3','9','4','6','2','8','7','1'],['6','8','1','7','5','9','2','4','3'],['4','7','2','1','8','3','5','6','9']]
+#print(checkValid(np.array(grid)))
