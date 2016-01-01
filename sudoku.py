@@ -20,13 +20,11 @@ ineqVert = [[1,1,0,0,0,1,0,1,1],[1,0,1,0,1,1,1,0,0],[0,1,0,1,1,0,0,0,1],[1,0,0,1
 '''
 
 clues = [[0,0,0,0,1,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,1,0,0],[0,0,0,0,0,1,0,0,0],[1,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,1,0],[0,0,0,1,0,0,0,0,0],[0,0,1,0,0,0,0,0,0],[0,0,0,0,0,0,0,2,1]]
-unclues = []
+unclues = [[set() for x in range(9)] for x in range(9)]
 emptyValue_unclues = set([0])
 
 def fillUnclues():
 	global unclues
-	
-	unclues = [[set() for x in range(9)] for x in range(9)]
 	
 	for xClues in range(9):
 		for yClues in range(9):
@@ -206,6 +204,50 @@ def visuGrid(grid):
 				mystr += '-----------------\n'
 
 	return mystr
+	
+#checks if a 3x3 square has a unique solution by trying to solve it 1000 times, and checking each time if the solution is similar to the previous one
+def checkUniqueSquare(miniGrid, miniIneqHori, miniIneqVert, miniClues, miniUnclues):
+	
+	for i in range(1000):
+		swapped = 1
+		
+		while swapped > 0:
+			
+			swapped = 0
+			for row in range(3):
+				i = 0
+				for col in range(2):
+					if (miniGrid[row][col] > miniGrid[row][col+1]) != miniIneqHori[row][i] and not miniClues[row][col] and not miniClues[row][col+1] and not miniGrid[row][col] in miniUnclues[row][col+1] and not miniGrid[row][col+1] in miniUnclues[row][col]:
+						doIt = randint(0,1)
+						if doIt:
+							swapped += 1
+							tmp = miniGrid[row][col]
+							miniGrid[row][col] = miniGrid[row][col+1]
+							miniGrid[row][col+1] = tmp
+					i += 1
+			
+			for col in range(3):		
+				i = 0	
+				for row in range(2)]:
+					if (miniGrid[row][col] > miniGrid[row+1][col]) != ineqVert[i][col] and not miniClues[row][col] and not miniClues[row+1][col] and not miniGrid[row][col] in miniUnclues[row+1][col] and not miniGrid[row+1][col] in miniUnclues[row][col]:
+						doIt = randint(0,1)
+						if doIt:
+							swapped += 1
+							tmp = miniGrid[row][col]
+							miniGrid[row][col] = miniGrid[row+1][col]
+							miniGrid[row+1][col] = tmp
+					i += 1
+			
+			if i != 0:
+				oldSol = newSol
+				newSol = grid2string(miniGrid)
+			
+				if oldSol != newSol:
+					return false
+			else:
+				newSol = grid2string(miniGrid)
+				
+	return newSol
 
 fillUnclues()
 swapNumbers()
