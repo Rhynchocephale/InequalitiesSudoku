@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import itertools
 #from time import sleep
 import numpy as np
@@ -11,7 +13,7 @@ setOfNumbers = set([1, 2, 3, 4, 5, 6, 7, 8, 9])
 
 subsquares = [[0, 0], [0, 3], [0, 6], [3, 0], [3, 3], [3, 6], [6, 0], [6, 3], [6, 6]]
 adjacentCases = {(0, 0): [[0, 1], [1, 0]], (0, 1): [[0, 0], [0, 2], [1, 1]], (0, 2): [[0, 1], [1, 2]],
-(1, 0): [[0, 0], [1, 1], [2, 0]], (1, 1): [[1, 0], [0, 1], [2, 1], [1, 2], (2, 1): [[1, 1], [2, 0], [2, 2]],
+(1, 0): [[0, 0], [1, 1], [2, 0]], (1, 1): [[1, 0], [0, 1], [2, 1], [1, 2]], (1, 2): [[1, 1], [2, 0], [2, 2]],
 (2, 0): [[1, 0], [2, 1]], (2, 1): [[1, 1], [2, 0], [2, 2]], (2, 2): [[2, 1], [1, 2]]}
 
 #Olivia
@@ -60,18 +62,18 @@ def uncluesRowCol():
 					if unclues[row][col] != emptyValue_unclues and not num in unclues[row][col]:
 						setOfRows.add(row)
 						setOfCols.add(col)
-			if len(listOfRows) == 1:
+			if len(setOfRows) == 1:
 				row = list(setOfRows)[0]
 				for x in [x for x in range(9) if not x in [x+subsquare[1] for x in range(3)]]:
 					if unclues[row][x] != emptyValue_unclues:
 						unclues[row][x].add(num)
-			if len(listOfCols) == 1:
+			if len(setOfCols) == 1:
 				col = list(setOfCols)[0]
 				for x in [x for x in range(9) if not x in [x+subsquare[0] for x in range(3)]]:
 					if unclues[x][col] != emptyValue_unclues:
 						unclues[x][col].add(num)
 	
-	return doneSomething
+	return 0
 	
 def uncluesSquare():
 	
@@ -104,15 +106,14 @@ def uncluesIneq():
 					for relativeCase in adjacentCases[(relativeRow, relativeCol)]:
 						absoluteCase = [relativeCase[0] + subsquare[0], relativeCase[1] + subsquare[1]]
 						
-					#TODO
-						
-							
+					#TODO		
 	return 0
 
 #checks if only one possibility for number in row/col
 def cluesRowCol():
 	global clues
 	global unclues
+	found = 0
 	
 	for num in range(1,10):
 
@@ -123,8 +124,9 @@ def cluesRowCol():
 					listOfCols.append(col)
 			if len(listOfCols) == 1:
 				clues[row][listOfCols[0]] = num
-				unclues[row][listOfCols[0]] = emptyValue_unclues
+				unclues[row][listOfCols[0]] = emptyValue_unclues
 				fillUnclues()
+				found += 1
 		
 		for col in range(9):
 			listOfRows = []
@@ -133,15 +135,18 @@ def cluesRowCol():
 					listOfRows.append(row)
 			if len(listOfRows) == 1:
 				clues[listOfRows[0]][col] = num
-				unclues[listOfRows[0]][col] = emptyValue_unclues
+				unclues[listOfRows[0]][col] = emptyValue_unclues
 				fillUnclues()
+				found += 1
 	
-	return 0
+	return found
 	
 #checks if only one possibility for a number in a subsquare
 def cluesSquare():
 	global clues
 	global unclues
+	
+	found = 0
 	
 	for num in range(1,10):
 		for subsquare in subsquares:
@@ -154,8 +159,9 @@ def cluesSquare():
 				clues[possibilities[0]][possibilities[1]] = num
 				unclues[possibilities[0]][possibilities[1]] = emptyValue_unclues
 				fillUnclues()
+				found += 1
 	
-	return 0
+	return found
 
 def unclues2clues():
 	
@@ -168,7 +174,7 @@ def unclues2clues():
 				clues[row][col] = list(setOfNumbers-unclues[row][col])[0]
 				unclues[row][col] = emptyValue_unclues
 				found += 1	
-			else if length > 8:
+			elif length > 8:
 				for i in range(10^3):
 					print("ERROR: unclues containing all numbers in square "+str(row+1)+", "+str(col+1))
 					
@@ -178,11 +184,15 @@ def fillUnclues():
 	found = 1
 	
 	while found > 0:
+		found = 0
+		
 		uncluesRowCol()
 		uncluesSquare()
 		uncluesIneq()
-	
-		found = unclues2clues()
+		
+		found += cluesRowCol()
+		found += cluesSquare()
+		found += unclues2clues()
 	
 	return 0
 
@@ -465,7 +475,7 @@ if __name__ == '__main__':
 	checkUniqueGrid()
 	#pool = mp.Pool(processes=8)
 	#result = [pool.apply(solveFull) for x in range(8)]
-	
+	'''
 	q = Queue.Queue()
 
 	for x in range(4):
@@ -475,7 +485,7 @@ if __name__ == '__main__':
 
 	s = q.get()
 	print s
-	
+	'''
 	
 #grid = [['9', '1', '8', '3', '2', '6', '7', '5', '4'], ['3', '4', '6', '5', '1', '7', '9', '2', '8'], ['7', '2', '5', '8', '9', '4', '1', '3', '6'], ['1', '5', '3', '2', '4', '8', '6', '9', '7'], ['8', '9', '4', '6', '7', '5', '3', '1', '2'], ['2', '6', '7', '9', '3', '1', '4', '8', '5'], ['5', '3', '9', '4', '6', '2', '8', '7', '1'], ['6', '8', '1', '7', '5', '9', '2', '4', '3'], ['4', '7', '2', '1', '8', '3', '5', '6', '9']]
 #print(checkValid(np.array(grid)))
