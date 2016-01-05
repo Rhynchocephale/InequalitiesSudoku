@@ -10,16 +10,9 @@ numbers = '123456789'
 setOfNumbers = set([1, 2, 3, 4, 5, 6, 7, 8, 9])
 
 subsquares = [[0, 0], [0, 3], [0, 6], [3, 0], [3, 3], [3, 6], [6, 0], [6, 3], [6, 6]]
-corners = [[0, 0], [2, 0], [0, 2], [2, 2]]
-#links corners with the edges it touches: corner[0] touches edges[0] & [1], corner[1] touches [0] and [2]...
-cornersLinks = [[0, 1], [0, 2], [1, 3], [2, 3]]
-
-edges = [[0, 1], [1, 0], [1, 2], [2, 1]]
-#same in reverse
-edgesLinks = [[0, 1], [0, 2], [1, 3], [2, 3]]
-
-centre = [1, 1]
-
+adjacentCases = {(0, 0): [[0, 1], [1, 0]], (0, 1): [[0, 0], [0, 2], [1, 1]], (0, 2): [[0, 1], [1, 2]],
+(1, 0): [[0, 0], [1, 1], [2, 0]], (1, 1): [[1, 0], [0, 1], [2, 1], [1, 2], (2, 1): [[1, 1], [2, 0], [2, 2]],
+(2, 0): [[1, 0], [2, 1]], (2, 1): [[1, 1], [2, 0], [2, 2]], (2, 2): [[2, 1], [1, 2]]}
 
 #Olivia
 ineqHori = [[1, 0, 1, 0, 0, 0], [1, 0, 0, 1, 0, 0], [1, 1, 1, 0, 0, 1], [0, 1, 0, 1, 0, 1], [0, 0, 1, 1, 0, 1], [1, 1, 0, 1, 1, 0], [0, 1, 0, 0, 0, 0], [1, 1, 1, 1, 1, 0], [0, 1, 0, 0, 1, 1]]
@@ -35,6 +28,10 @@ ineqVert = [[1, 1, 0, 0, 0, 1, 1, 1, 1], [0, 0, 1, 0, 1, 1, 1, 0, 1], [1, 1, 0, 
 clues = [[0, 0, 0, 0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0], [1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 2, 1]]
 unclues = [[set() for x in range(9)] for x in range(9)]
 emptyValue_unclues = set([0])
+
+#find greatest element of firstSet which is not in unset
+def nearlyMax(firstSet, unset):
+	return max(firstSet-unset)
 
 def uncluesRowCol():
 	global unclues
@@ -98,26 +95,18 @@ def uncluesIneq():
 		while found > 0:
 			found = 0
 			i = 0
-			for coord in [[corner[0] + subsquare[0], corner[1] + subsquare[1]] for corner in corners]:
-				smallerThan = []
-				greaterThan = []
+			for relativeRow in range(3):
+				absoluteRow = relativeRow + subsquare[0]
+				for relativeCol in range(3):
+					absoluteCol = relativeCol + subsquare[1]
+					smallerThan = []
+					greaterThan = []
+					for relativeCase in adjacentCases[(relativeRow, relativeCol)]:
+						absoluteCase = [relativeCase[0] + subsquare[0], relativeCase[1] + subsquare[1]]
+						
+					#TODO
+						
 							
-				compare with edges number cornersLinks[i][0] et cornersLinks[i][1]
-				if '>' x2:
-					#greater than the two smallest possible different numbers in the two squares
-				else if '<' x2:
-				
-				else:
-				
-				found += 1
-				i+=1
-			
-			i = 0
-			for coord in [[edge[0] + subsquare[0], edge[1] + subsquare[1]] for edge in edges]:
-			
-				i += 1
-				
-			#PLUS CENTRE
 	return 0
 
 #checks if only one possibility for number in row/col
