@@ -470,18 +470,15 @@ def checkUniqueGrid():
 
 	return 0
 
-#return True if the inequality between cell1 and cell2 is respected. To gain computation time, does not throw error if cells are not adjacent. It just crashes.
-def compareCells(grid, row1, col1, row2, col2):
+#return True if the inequality between cell1 and cell2 is respected. To gain computation time, does not throw error if cells are not adjacent.
+def getIneq(grid, row1, col1, row2, col2):
 	if row1 == row2: #if different columns, use ineqHori
 		#we have to turn the ineq around if col1 > col2
-		return ((grid[row1][col1] > grid[row2][col2]) == ineqHori[row1][2*min(col1, col2)/3]) == col2 > col1
+		return ineqHori[row1][2*min(col1, col2)/3] # == (col1 > col2)
 		
-	if col1 == col2: #if different columns, use ineqHori
-		#if not adjacent
-		if abs(row2-row1) != 1:
-			return "Trying to compare non adjacent cells"
+	if col1 == col2: #if different rows, use ineqVert
 		#we have to turn the ineq around if row1 > row2
-		return ((grid[row1][col1] > grid[row2][col2]) == ineqVert[2*min(row1, row2)/3][col1]) == row2 > row1
+		return ineqVert[2*min(row1, row2)/3][col1] # == (row2 > row1)
 			
 if __name__ == '__main__':
 	#fillUnclues()
@@ -494,17 +491,17 @@ if __name__ == '__main__':
 	print('----------')
 	print('')
 	
-	print('[0, 0], [1, 0]:')
-	print(compareCells(grid, 0, 0, 1, 0))
+	print('[0, 0], [1, 0]: True, sign v')
+	print(getIneq(grid, 0, 0, 1, 0))
 	
-	print('[8, 5], [7, 5]:')
-	print(compareCells(grid, 8, 5, 7, 5))
+	print('[8, 5], [7, 5]: True, sign ^')
+	print(getIneq(grid, 8, 5, 7, 5))
 	
-	print('[3, 5], [3, 4]:')
-	print(compareCells(grid, 3, 5, 3, 4))
+	print('[3, 5], [3, 4]: False, sign >')
+	print(getIneq(grid, 3, 5, 3, 4))
 	
-	print('[6, 6], [6, 7]:')
-	print(compareCells(grid, 6, 6, 6, 7))
+	print('[6, 6], [6, 7]: False, sign <')
+	print(getIneq(grid, 6, 6, 6, 7))
 	
 	#pool = mp.Pool(processes=8)
 	#result = [pool.apply(solveFull) for x in range(8)]
