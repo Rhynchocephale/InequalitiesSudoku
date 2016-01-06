@@ -4,7 +4,7 @@ import itertools
 #from time import sleep
 import numpy as np
 from random import randint
-#import multiprocessing as mp
+import multiprocessing as mp
 import Queue
 import threading
 
@@ -316,9 +316,8 @@ def solveSquare(grid, pos):
 	swapped = 0
 	
 	for row in [x + subsquare[0] for x in range(3)]:
-		i = 0
 		for col in [x + subsquare[1] for x in range(2)]:
-			if (grid[row][col] > grid[row][col+1]) != ineqHori[row][2*subsquare[0]/3+i] and not clues[row][col] and not clues[row][col+1] and not grid[row][col] in unclues[row][col+1] and not grid[row][col+1] in unclues[row][col]:
+			if (grid[row][col] > grid[row][col+1]) != getIneq(grid, row, col, row, col+1) and not clues[row][col] and not clues[row][col+1] and not grid[row][col] in unclues[row][col+1] and not grid[row][col+1] in unclues[row][col]:
 				doIt = randint(0, 1)
 				if doIt:
 					swapped += 1
@@ -326,12 +325,10 @@ def solveSquare(grid, pos):
 					grid[row][col] = grid[row][col+1]
 					grid[row][col+1] = tmp
 				#print('Hori: '+str(grid[row][col])+(' < ', ' > ')[ineqHori[row][2*subsquare[0]/3+i]]+str(grid[row][col+1]))
-			i += 1
 	
 	for col in [x + subsquare[1] for x in range(3)]:		
-		i = 0	
 		for row in [x + subsquare[0] for x in range(2)]:
-			if (grid[row][col] > grid[row+1][col]) != ineqVert[2*subsquare[1]/3+i][col] and not clues[row][col] and not clues[row+1][col] and not grid[row][col] in unclues[row+1][col] and not grid[row+1][col] in unclues[row][col]:
+			if (grid[row][col] > grid[row+1][col]) != getIneq(grid, row, col, row+1, col) and not clues[row][col] and not clues[row+1][col] and not grid[row][col] in unclues[row+1][col] and not grid[row+1][col] in unclues[row][col]:
 				doIt = randint(0, 1)
 				if doIt:
 					swapped += 1
@@ -339,8 +336,7 @@ def solveSquare(grid, pos):
 					grid[row][col] = grid[row+1][col]
 					grid[row+1][col] = tmp
 				#print('Vert: '+str(grid[row][col])+(' < ', ' > ')[ineqVert[2*subsquare[1]/3+i][col]]+str(grid[row+1][col]))
-			i += 1
-
+				
 	return (grid, swapped)
 
 def visuGrid(grid):
@@ -474,38 +470,21 @@ def checkUniqueGrid():
 def getIneq(grid, row1, col1, row2, col2):
 	if row1 == row2: #if different columns, use ineqHori
 		#we have to turn the ineq around if col1 > col2
-		return ineqHori[row1][2*min(col1, col2)/3] # == (col1 > col2)
+		minCol = min(col1, col2)
+		return ineqHori[row1][2*minCol/3+minCol%3] == (col2 > col1)
 		
 	if col1 == col2: #if different rows, use ineqVert
 		#we have to turn the ineq around if row1 > row2
-		return ineqVert[2*min(row1, row2)/3][col1] # == (row2 > row1)
+		minRow = min(row1, row2)
+		return ineqVert[2*minRow/3+minRow%3][col1] == (row2 > row1)
 			
 if __name__ == '__main__':
-	#fillUnclues()
-	#checkUniqueGrid()
-	
-	grid = randomGrid()
-	
-	print(visuGrid(grid))
-	print('')
-	print('----------')
-	print('')
-	
-	print('[0, 0], [1, 0]: True, sign v')
-	print(getIneq(grid, 0, 0, 1, 0))
-	
-	print('[8, 5], [7, 5]: True, sign ^')
-	print(getIneq(grid, 8, 5, 7, 5))
-	
-	print('[3, 5], [3, 4]: False, sign >')
-	print(getIneq(grid, 3, 5, 3, 4))
-	
-	print('[6, 6], [6, 7]: False, sign <')
-	print(getIneq(grid, 6, 6, 6, 7))
-	
-	#pool = mp.Pool(processes=8)
-	#result = [pool.apply(solveFull) for x in range(8)]
-	'''
+	fillUnclues()
+	checkUniqueGrid()
+		
+	pool = mp.Pool(processes=8)
+	result = [pool.apply(solveFull) for x in range(8)]
+
 	q = Queue.Queue()
 
 	for x in range(4):
@@ -515,7 +494,7 @@ if __name__ == '__main__':
 
 	s = q.get()
 	print s
-	'''
+
 	
 #grid = [['9', '1', '8', '3', '2', '6', '7', '5', '4'], ['3', '4', '6', '5', '1', '7', '9', '2', '8'], ['7', '2', '5', '8', '9', '4', '1', '3', '6'], ['1', '5', '3', '2', '4', '8', '6', '9', '7'], ['8', '9', '4', '6', '7', '5', '3', '1', '2'], ['2', '6', '7', '9', '3', '1', '4', '8', '5'], ['5', '3', '9', '4', '6', '2', '8', '7', '1'], ['6', '8', '1', '7', '5', '9', '2', '4', '3'], ['4', '7', '2', '1', '8', '3', '5', '6', '9']]
 #print(checkValid(np.array(grid)))
