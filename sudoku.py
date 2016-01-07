@@ -95,8 +95,11 @@ def uncluesIneq():
 			i = 0
 			for relativeRow in range(3):
 				absoluteRow = relativeRow + subsquare[0]
-				for relativeCol in range(3):
+				for relativeCol in range(3):					
 					absoluteCol = relativeCol + subsquare[1]
+					if unclues[absoluteRow][absoluteCol] == emptyValue_unclues:
+						continue
+					
 					smallerThan = set()
 					greaterThan = set()
 					for relativeAdjacentCase in adjacentCases[(relativeRow, relativeCol)]:
@@ -105,13 +108,24 @@ def uncluesIneq():
 						#if case > adjacent 
 						if getIneq(absoluteRow, absoluteCol, absoluteAdjacentRow, absoluteAdjacentCol):
 							#get smallest number that is neither in unclues nor in greaterThan
-							greaterThan.add(min((setOfNumbers-unclues[absoluteAdjacentRow][absoluteAdjacentCol])-greaterThan))
+							#ADDED CASE OF ALREADY KNOWN CLUE
+							if unclues[absoluteAdjacentRow][absoluteAdjacentCol] != emptyValue_unclues:
+								greaterThan.add(min((setOfNumbers-unclues[absoluteAdjacentRow][absoluteAdjacentCol])-greaterThan))
+							else:
+								greaterThan.add(clues[absoluteAdjacentRow][absoluteAdjacentCol])
 						else:
-							smallerThan.add(max((setOfNumbers-unclues[absoluteAdjacentRow][absoluteAdjacentCol])-smallerThan))
-					for x in range(max(greaterThan)):
-						unclues[absoluteRow][absoluteCol].add(x)
-					for x in range(min(smallerThan)):
-						unclues[absoluteRow][absoluteCol].add(x)
+							if unclues[absoluteAdjacentRow][absoluteAdjacentCol] != emptyValue_unclues:
+								smallerThan.add(max((setOfNumbers-unclues[absoluteAdjacentRow][absoluteAdjacentCol])-smallerThan))
+							else:
+								smallerThan.add(clues[absoluteAdjacentRow][absoluteAdjacentCol])
+					if greaterThan:
+						for x in range(max(greaterThan)):
+							if unclues[absoluteRow][absoluteCol] != emptyValue_unclues:
+								unclues[absoluteRow][absoluteCol].add(x)
+					if smallerThan:
+						for x in range(min(smallerThan)):
+							if unclues[absoluteRow][absoluteCol] != emptyValue_unclues:
+								unclues[absoluteRow][absoluteCol].add(x)
 	return 0
 
 #checks if only one possibility for number in row/col
