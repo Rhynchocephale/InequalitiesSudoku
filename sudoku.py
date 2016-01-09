@@ -115,15 +115,25 @@ def uncluesIneq():
 								greaterThan.add(clues[absoluteAdjacentRow][absoluteAdjacentCol])
 						else:
 							if unclues[absoluteAdjacentRow][absoluteAdjacentCol] != emptyValue_unclues:
+								'''print('setOfNumbers: ')
+								print(setOfNumbers)
+								print('unclues['+str(absoluteAdjacentRow)+']['+str(absoluteAdjacentCol)+']:')
+								'''
+								#print(unclues[absoluteAdjacentRow][absoluteAdjacentCol])
+								'''
+								print('smallerThan:')
+								print(smallerThan)
+								print('------')'''
+								#print(unclues[absoluteRow][absoluteCol])
 								smallerThan.add(max((setOfNumbers-unclues[absoluteAdjacentRow][absoluteAdjacentCol])-smallerThan))
 							else:
 								smallerThan.add(clues[absoluteAdjacentRow][absoluteAdjacentCol])
 					if greaterThan:
-						for x in range(max(greaterThan)):
+						for x in range(1,max(greaterThan)+1):
 							if unclues[absoluteRow][absoluteCol] != emptyValue_unclues:
 								unclues[absoluteRow][absoluteCol].add(x)
 					if smallerThan:
-						for x in range(min(smallerThan)):
+						for x in range(min(smallerThan),10):
 							if unclues[absoluteRow][absoluteCol] != emptyValue_unclues:
 								unclues[absoluteRow][absoluteCol].add(x)
 	return 0
@@ -212,6 +222,10 @@ def fillUnclues():
 		found += cluesRowCol()
 		found += cluesSquare()
 		found += unclues2clues()
+	
+		print('FOUND: '+str(found))
+		for i in range(6):
+			print('------------')
 	
 	return 0
 
