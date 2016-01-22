@@ -27,26 +27,62 @@ ineqVert = [[1, 1, 0, 0, 0, 1, 1, 1, 1], [0, 0, 1, 0, 1, 1, 1, 0, 1], [1, 1, 0, 
 #line by line, 0 for ^, 1 for v
 #ineqVert = [[1, 1, 0, 0, 0, 1, 0, 1, 1], [1, 0, 1, 0, 1, 1, 1, 0, 0], [0, 1, 0, 1, 1, 0, 0, 0, 1], [1, 0, 0, 1, 1, 0, 1, 1, 0], [1, 1, 1, 0, 0, 1, 1, 1, 0], [1, 0, 0, 1, 1, 1, 1, 0, 1]]
 
-clues = [[0, 0, 0, 0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0], [1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 0], [0, 0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 2, 1]]
+clues = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [4, 1, 9, 5, 7, 6, 2, 3, 8], [8, 6, 2, 9, 3, 4, 1, 7, 5], [2, 7, 6, 4, 9, 1, 5, 8, 3], [1, 4, 8, 7, 5, 3, 6, 9, 2], [9, 5, 3, 6, 8, 2, 7, 1, 4], [7, 8, 4, 1, 2, 9, 3, 5, 8], [3, 2, 1, 8, 6, 5, 9, 4, 7], [6, 9, 5, 3, 4, 7, 8, 2, 1]]
 unclues = [[set() for x in range(9)] for x in range(9)]
-emptyValue_unclues = set([0])
+emptyValue_unclues = set([0]) #setOfNumbers
+
+
+def addUnclue(row, col, val):
+	global unclues
+	global clues
+	
+	if unclues[row][col] != emptyValue_unclues:
+		unclues[row][col].add(val)
+		if len(unclues[row][col]) == 8:
+			clues[row][col] = list(setOfNumbers-unclues[row][col])[0]
+			unclues[row][col] = emptyValue_unclues
+			
+	return 0
+
+def countUnclues()
+	global unclues
+	
+	num = 0
+	
+	for row in range(9):
+		for col in range(9):
+			if unclues[row][col] != emptyValue_unclues:
+				num += len(unclues[row][col])
+			else:
+				num += 9
+	
+	return num
+
+#to add: if two numbers can only be in two cases (in a subsquare, row/col), nothing else there
+#puts emptyValue_unclues in unclues if clues not zero
+def initUnclues():
+	global unclues
+	
+	for row in range(9):
+		for col in range(9):
+			if clues[row][col]:
+				unclues[row][col] = emptyValue_unclues
+				
+	return 0
+
 
 def uncluesRowCol():
 	global unclues
 		
-	#TODO once it is done: check if unclues forbids one number to be in a given row/column, for two horizontally/vertically aligned subsquares. In the 3rd subsquare, the number has to be in that column. 
-	
 	#if X is present in clues[a][b], adds X to unclues[:][b] and unclues[a][:]
 	for xClues in range(9):
 		for yClues in range(9):
 			if clues[xClues][yClues]:
 				for rowCol in range(9):
 					if unclues[xClues][rowCol] != emptyValue_unclues:
-						unclues[xClues][rowCol].add(clues[xClues][yClues])
+						addUnclue(xClues, rowCol, clues[xClues][yClues])
 					if unclues[rowCol][yClues] != emptyValue_unclues:
-						unclues[rowCol][yClues].add(clues[xClues][yClues])
-						
-				unclues[xClues][yClues] = emptyValue_unclues
+						addUnclue(rowCol, yClues, clues[xClues][yClues])
 	
 	#checks if unclues makes it only possible for one number to be in a single row/column in a subsquare
 	for subsquare in subsquares:
@@ -62,12 +98,12 @@ def uncluesRowCol():
 				row = list(setOfRows)[0]
 				for x in [x for x in range(9) if not x in [x+subsquare[1] for x in range(3)]]:
 					if unclues[row][x] != emptyValue_unclues:
-						unclues[row][x].add(num)
+						addUnclue(row, x, num)
 			if len(setOfCols) == 1:
 				col = list(setOfCols)[0]
 				for x in [x for x in range(9) if not x in [x+subsquare[0] for x in range(3)]]:
 					if unclues[x][col] != emptyValue_unclues:
-						unclues[x][col].add(num)
+						addUnclues(x, col, num)
 	
 	return 0
 	
@@ -81,7 +117,7 @@ def uncluesSquare():
 					for row2 in [x + subsquare[0] for x in range(3)]:
 						for col2 in [x + subsquare[1] for x in range(3)]:
 							if unclues[row2][col2] != emptyValue_unclues:
-								unclues[row2][col2].add(clues[row][col])
+								addUnclue(row2, col2, clues[row][col])
 	
 	return 0
 		
@@ -119,7 +155,8 @@ def uncluesIneq():
 								print(setOfNumbers)
 								print('unclues['+str(absoluteAdjacentRow)+']['+str(absoluteAdjacentCol)+']:')
 								'''
-								#print(unclues[absoluteAdjacentRow][absoluteAdjacentCol])
+								print(unclues[absoluteAdjacentRow][absoluteAdjacentCol])
+								print(absoluteAdjacentRow, absoluteAdjacentCol)
 								'''
 								print('smallerThan:')
 								print(smallerThan)
@@ -131,11 +168,11 @@ def uncluesIneq():
 					if greaterThan:
 						for x in range(1,max(greaterThan)+1):
 							if unclues[absoluteRow][absoluteCol] != emptyValue_unclues:
-								unclues[absoluteRow][absoluteCol].add(x)
+								addUnclue(absoluteRow, absoluteCol, x)
 					if smallerThan:
 						for x in range(min(smallerThan),10):
 							if unclues[absoluteRow][absoluteCol] != emptyValue_unclues:
-								unclues[absoluteRow][absoluteCol].add(x)
+								addUnclue(absoluteRow, absoluteCol, x)
 	return 0
 
 #checks if only one possibility for number in row/col
@@ -210,22 +247,24 @@ def unclues2clues():
 	return found
 	
 def fillUnclues():
-	found = 1
+	hasChanged = True
+	initUnclues()
+	uncluesFound = 0
 	
-	while found > 0:
-		found = 0
-		
+	while hasChanged:	
 		uncluesRowCol()
 		uncluesSquare()
 		uncluesIneq()
 		
-		found += cluesRowCol()
-		found += cluesSquare()
-		found += unclues2clues()
+		cluesRowCol()
+		cluesSquare()
+		unclues2clues()
+		
+		previousUncluesFound = uncluesFound
+		uncluesFound = countUnclues()
+		hasChanged = uncluesFound - previousUncluesFound
 	
-		print('FOUND: '+str(found))
-		for i in range(6):
-			print('------------')
+		print('FOUND: '+str(hasChanged))
 	
 	return 0
 
@@ -243,11 +282,13 @@ def grid2string(grid):
 		gridString += '\n'
 	return gridString
 
-
 def checkLines(grid):
 	transposed = grid.transpose()
 	for line in range(9):
 		if ''.join(sorted(''.join(transposed[line]))) != numbers or ''.join(sorted(''.join(grid[line]))) != numbers:
+			#print('num: '+numbers)
+			#print('col: '+''.join(sorted(''.join(transposed[line]))))
+			#print('row: '+''.join(sorted(''.join(grid[line]))))
 			return False
 	return True
 	
@@ -300,7 +341,7 @@ def solveFull():
 				#sleep(50)
 				break
 		
-		#print('Retries: '+str(retries)+', Iterations: '+str(iterations)+', Total swaps: '+str(totalSwaps))
+		print('Retries: '+str(retries)+', Iterations: '+str(iterations)+', Total swaps: '+str(totalSwaps))
 		retries += 1
 
 		if(checkValid(grid)):
@@ -492,11 +533,12 @@ def checkUniqueGrid():
 				
 		unique = checkUniqueSquare(miniIneqHori, miniIneqVert, miniClues, miniUnclues)
 		if unique:
+			#for i in range(10000):
+				#print("YEAH!")
 			for x in range(3):
 				for y in range(3):
 					clues[x + subsquare[0]][y + subsquare[1]] = unique[x][y]
-			fillUnclues()
-
+			
 	return 0
 
 #return True if the inequality between cell1 and cell2 is respected. To gain computation time, does not throw error if cells are not adjacent.
@@ -513,9 +555,12 @@ def getIneq(row1, col1, row2, col2):
 			
 if __name__ == '__main__':
 	fillUnclues()
-	checkUniqueGrid()
+	#checkUniqueGrid()
 		
-	pool = mp.Pool(processes=8)
+	#uncluesRowCol()
+	solveFull()
+	
+	'''pool = mp.Pool(processes=32)
 	result = [pool.apply(solveFull) for x in range(8)]
 
 	q = Queue.Queue()
@@ -526,7 +571,7 @@ if __name__ == '__main__':
 		t.start()
 
 	s = q.get()
-	print s
+	print s'''
 
 	
 #grid = [['9', '1', '8', '3', '2', '6', '7', '5', '4'], ['3', '4', '6', '5', '1', '7', '9', '2', '8'], ['7', '2', '5', '8', '9', '4', '1', '3', '6'], ['1', '5', '3', '2', '4', '8', '6', '9', '7'], ['8', '9', '4', '6', '7', '5', '3', '1', '2'], ['2', '6', '7', '9', '3', '1', '4', '8', '5'], ['5', '3', '9', '4', '6', '2', '8', '7', '1'], ['6', '8', '1', '7', '5', '9', '2', '4', '3'], ['4', '7', '2', '1', '8', '3', '5', '6', '9']]
