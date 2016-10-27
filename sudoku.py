@@ -1,4 +1,7 @@
 import random, time, sys
+from multiprocessing import Pool
+
+random.seed()
 
 def colOk(sudokuGrid, candidate, refCol):
 	for row in range(9):
@@ -27,7 +30,10 @@ def printGrid(sudokuGrid):
 		gridString += '\n'
 	print(gridString)
 
-def visuGrid(grid, ineqHori, ineqVert):
+def visuGrid(grid):
+	if not grid:
+		return 0
+	
 	mystr = ''
 	i = 0
 	for row in range(9):
@@ -44,7 +50,8 @@ def visuGrid(grid, ineqHori, ineqVert):
 		else:
 			if row != 8:
 				mystr += '-----------------\n'
-
+	
+	print(mystr)
 	return mystr
 
 def inequalityTest(sudokuGrid, ineqHori, ineqVert, candidate, row, col):
@@ -114,11 +121,75 @@ def transformInput(ineq):
 		c.append(d)
 	return c
 
+def readSource():
+	f = open("source.html", "r")
+	ineqHori = ""
+	ineqVert = ""
+	for line in f:
+		if "/gt.png" in line:
+			ineqHori += "1"
+		elif "/lt.png" in line:
+			ineqHori += "0"
+		elif "/gtv.png" in line:
+			ineqVert += "1"
+		elif "/ltv.png" in line:
+			ineqVert += "0"
+	
+	ineqVert = [ineqVert[i:i + 9] for i in range(0, len(ineqVert), 9)]
+	ineqHori = [ineqHori[i:i + 6] for i in range(0, len(ineqHori), 6)]
+
+	return ineqHori, ineqVert
+	
+'''subsquares = [[0, 0], [0, 3], [0, 6], [3, 0], [3, 3], [3, 6], [6, 0], [6, 3], [6, 6]]
+adjacentCases = {(0, 0): [[0, 1], [1, 0]], (0, 1): [[0, 0], [0, 2], [1, 1]], (0, 2): [[0, 1], [1, 2]],
+(1, 0): [[0, 0], [1, 1], [2, 0]], (1, 1): [[1, 0], [0, 1], [2, 1], [1, 2]], (1, 2): [[1, 1], [2, 0], [2, 2]],
+(2, 0): [[1, 0], [2, 1]], (2, 1): [[1, 1], [2, 0], [2, 2]], (2, 2): [[2, 1], [1, 2]]}
+
+def getIneq(row1, col1, row2, col2):
+	if row1 == row2: #if different columns, use ineqHori
+		#we have to turn the ineq around if col1 > col2
+		minCol = min(col1, col2)
+		return ineqHori[row1][2*minCol/3+minCol%3] == (col2 > col1)
+		
+	if col1 == col2: #if different rows, use ineqVert
+		#we have to turn the ineq around if row1 > row2
+		minRow = min(row1, row2)
+return ineqVert[2*minRow/3+minRow%3][col1] == (row2 > row1)
+
+def uncluesIneq():	
+	for subsquare in subsquares:
+		found = 1
+		while found > 0:
+			found = 0
+			i = 0
+			for relativeRow in range(3):
+				absoluteRow = relativeRow + subsquare[0]
+				for relativeCol in range(3):					
+					absoluteCol = relativeCol + subsquare[1]
+					
+					smallerThan = [10]
+					greaterThan = [0]
+					for relativeAdjacentCase in adjacentCases[(relativeRow, relativeCol)]:
+						#if case > adjacent 
+						if getIneq(absoluteRow, absoluteCol, absoluteAdjacentRow, absoluteAdjacentCol):
+							greaterThan.append(max(greaterThan)+1)
+						else:
+							smallerThan.append(min(smallerThan)-1)
+					if greaterThan:
+						for x in range(1,max(greaterThan)+1):
+							possibleNumbers[absoluteRow][absoluteCol]
+					if smallerThan:
+						for x in range(min(smallerThan),10):
+							if unclues[absoluteRow][absoluteCol] != emptyValue_unclues:
+								addUnclue(absoluteRow, absoluteCol, x)
+return 0'''
 
 #line by line. 0 for <, 1 for >
-ineqHori = ["100101", "101100", "110110", "101011", "001010", "010011", "011100", "010001", "001101"]
+#ineqHori = ["011001", "011000", "110101", "000011", "100001", "100110", "101110", "101111", "010110"]
 #line by line, 0 for ^, 1 for v
-ineqVert = ["010010110", "001000011", "100001111", "001100101", "001100001", "110000100"]
+#ineqVert = ["110110000", "011100111", "111001100", "000101011", "001000011", "101100010"]
+
+ineqHori, ineqVert = readSource()
 
 if not checkInput(ineqHori, ineqVert):
 	sys.exit(0)
@@ -126,42 +197,64 @@ if not checkInput(ineqHori, ineqVert):
 ineqHori = transformInput(ineqHori)
 ineqVert = transformInput(ineqVert)
 
-t = time.time()
 
-sudokuGrid = [[0 for _ in range(9)] for _ in range(9)]
-possibleNumbers = [[list(range(1,10)) for _ in range(9)] for _ in range(9)]
-row = 0
-col = 0
-iterCount = 1
-previousLen = 9
-while row < 9:
-	while col < 9:
-		if not iterCount % 1000000:
-			print(iterCount)
-			print(visuGrid(sudokuGrid, ineqHori, ineqVert))
-		while(possibleNumbers[row][col]):
-			iterCount += 1
-			candidate = random.choice(possibleNumbers[row][col])
-			possibleNumbers[row][col].remove(candidate)
-			if colOk(sudokuGrid, candidate, col) and rowOk(sudokuGrid, candidate, row) and squareOk(sudokuGrid, candidate, row, col) and inequalityTest(sudokuGrid, ineqHori, ineqVert, candidate, row, col):
-				sudokuGrid[row][col] = candidate
-				#print(row, col, possibleNumbers[row][col])
-				col += 1
-				break
-		else:
-			possibleNumbers[row][col] = list(range(1,10))
-			if col:
-				col -= 1
-			else:
-				col = 8
-				row -= 1
-				#print(row)
-			sudokuGrid[row][col] = 0
-			#print(row, col)
-	col = 0
-	row += 1
-	#print(row)
+
+def solveSudoku(firstCases=[]):
+	sudokuGrid = [[0 for _ in range(9)] for _ in range(9)]
+	possibleNumbers = [[list(range(1,10)) for _ in range(9)] for _ in range(9)]
 	
-print(visuGrid(sudokuGrid, ineqHori, ineqVert))
-print("Seconds taken: "+str(time.time() - t))
-print("Iterations: "+str(iterCount-1))
+	if firstCases:
+		possibleNumbers[0][0] = [firstCases[0]]
+		possibleNumbers[0][1] = [firstCases[1]]
+		possibleNumbers[0][2] = [firstCases[2]]
+	
+	row = 0
+	col = 0
+	previousLen = 9
+	while row < 9:
+		while col < 9:
+			while(possibleNumbers[row][col]):
+				candidate = random.choice(possibleNumbers[row][col])
+				possibleNumbers[row][col].remove(candidate)
+				if colOk(sudokuGrid, candidate, col) and rowOk(sudokuGrid, candidate, row) and squareOk(sudokuGrid, candidate, row, col) and inequalityTest(sudokuGrid, ineqHori, ineqVert, candidate, row, col):
+					sudokuGrid[row][col] = candidate
+					#print(row, col, possibleNumbers[row][col])
+					col += 1
+					break
+			else:
+				possibleNumbers[row][col] = list(range(1,10))
+				if col:
+					col -= 1
+				else:
+					col = 8
+					row -= 1
+					if row < 0 or (row == 0 and col < len(firstCases)-1):
+						#print("Exiting for values "+str(firstCases[0])+", "+str(firstCases[1]))
+						return 0
+				sudokuGrid[row][col] = 0
+		col = 0
+		row += 1
+
+	return sudokuGrid
+
+if __name__ == '__main__':
+	t = time.time()
+	
+	processOrder = []
+	for x in range(1, 10):
+		for y in range(1, 10):
+			for z in range(1, 10):
+				if len(set([x, y, z])) == len([x, y, z]):
+					processOrder.append([x, y, z])
+	random.shuffle(processOrder)
+	pool = Pool(processes=8)
+	i = len(processOrder)
+	for x in pool.imap_unordered(solveSudoku, processOrder):
+		print(i)
+		i-=1
+		if x:
+			visuGrid(x)
+			print("Minutes taken: "+str((time.time() - t)/60))
+			sys.exit(0)
+	
+	#print("Iterations: "+str(iterCount-1))
