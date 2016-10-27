@@ -139,50 +139,6 @@ def readSource():
 	ineqHori = [ineqHori[i:i + 6] for i in range(0, len(ineqHori), 6)]
 
 	return ineqHori, ineqVert
-	
-'''subsquares = [[0, 0], [0, 3], [0, 6], [3, 0], [3, 3], [3, 6], [6, 0], [6, 3], [6, 6]]
-adjacentCases = {(0, 0): [[0, 1], [1, 0]], (0, 1): [[0, 0], [0, 2], [1, 1]], (0, 2): [[0, 1], [1, 2]],
-(1, 0): [[0, 0], [1, 1], [2, 0]], (1, 1): [[1, 0], [0, 1], [2, 1], [1, 2]], (1, 2): [[1, 1], [2, 0], [2, 2]],
-(2, 0): [[1, 0], [2, 1]], (2, 1): [[1, 1], [2, 0], [2, 2]], (2, 2): [[2, 1], [1, 2]]}
-
-def getIneq(row1, col1, row2, col2):
-	if row1 == row2: #if different columns, use ineqHori
-		#we have to turn the ineq around if col1 > col2
-		minCol = min(col1, col2)
-		return ineqHori[row1][2*minCol/3+minCol%3] == (col2 > col1)
-		
-	if col1 == col2: #if different rows, use ineqVert
-		#we have to turn the ineq around if row1 > row2
-		minRow = min(row1, row2)
-return ineqVert[2*minRow/3+minRow%3][col1] == (row2 > row1)
-
-def uncluesIneq():	
-	for subsquare in subsquares:
-		found = 1
-		while found > 0:
-			found = 0
-			i = 0
-			for relativeRow in range(3):
-				absoluteRow = relativeRow + subsquare[0]
-				for relativeCol in range(3):					
-					absoluteCol = relativeCol + subsquare[1]
-					
-					smallerThan = [10]
-					greaterThan = [0]
-					for relativeAdjacentCase in adjacentCases[(relativeRow, relativeCol)]:
-						#if case > adjacent 
-						if getIneq(absoluteRow, absoluteCol, absoluteAdjacentRow, absoluteAdjacentCol):
-							greaterThan.append(max(greaterThan)+1)
-						else:
-							smallerThan.append(min(smallerThan)-1)
-					if greaterThan:
-						for x in range(1,max(greaterThan)+1):
-							possibleNumbers[absoluteRow][absoluteCol]
-					if smallerThan:
-						for x in range(min(smallerThan),10):
-							if unclues[absoluteRow][absoluteCol] != emptyValue_unclues:
-								addUnclue(absoluteRow, absoluteCol, x)
-return 0'''
 
 #line by line. 0 for <, 1 for >
 #ineqHori = ["011001", "011000", "110101", "000011", "100001", "100110", "101110", "101111", "010110"]
@@ -196,8 +152,6 @@ if not checkInput(ineqHori, ineqVert):
 	
 ineqHori = transformInput(ineqHori)
 ineqVert = transformInput(ineqVert)
-
-
 
 def solveSudoku(firstCases=[]):
 	sudokuGrid = [[0 for _ in range(9)] for _ in range(9)]
@@ -218,7 +172,6 @@ def solveSudoku(firstCases=[]):
 				possibleNumbers[row][col].remove(candidate)
 				if colOk(sudokuGrid, candidate, col) and rowOk(sudokuGrid, candidate, row) and squareOk(sudokuGrid, candidate, row, col) and inequalityTest(sudokuGrid, ineqHori, ineqVert, candidate, row, col):
 					sudokuGrid[row][col] = candidate
-					#print(row, col, possibleNumbers[row][col])
 					col += 1
 					break
 			else:
@@ -229,7 +182,6 @@ def solveSudoku(firstCases=[]):
 					col = 8
 					row -= 1
 					if row < 0 or (row == 0 and col < len(firstCases)-1):
-						#print("Exiting for values "+str(firstCases[0])+", "+str(firstCases[1]))
 						return 0
 				sudokuGrid[row][col] = 0
 		col = 0
@@ -256,5 +208,4 @@ if __name__ == '__main__':
 			visuGrid(x)
 			print("Minutes taken: "+str((time.time() - t)/60))
 			sys.exit(0)
-	
-	#print("Iterations: "+str(iterCount-1))
+			
