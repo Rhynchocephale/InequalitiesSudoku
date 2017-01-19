@@ -57,19 +57,15 @@ def visuGrid(grid):
 def inequalityTest(sudokuGrid, ineqHori, ineqVert, candidate, row, col):
 	colMod = col%3
 	if colMod == 0:
-		if sudokuGrid[row][col+1]:
-			if (sudokuGrid[row][col+1] > candidate) == ineqHori[row][int(2*col/3)]:
+		if sudokuGrid[row][col+1] and (sudokuGrid[row][col+1] > candidate) == ineqHori[row][int(2*col/3)]:
 				return False
 	elif colMod == 1:
-		if sudokuGrid[row][col-1]:
-			if (candidate > sudokuGrid[row][col-1]) == ineqHori[row][int(2*(col-1)/3)]:
+		if sudokuGrid[row][col-1] and (candidate > sudokuGrid[row][col-1]) == ineqHori[row][int(2*(col-1)/3)]:
 				return False
-		if sudokuGrid[row][col+1]:
-			if (sudokuGrid[row][col+1] > candidate) == ineqHori[row][int(2*(col-1)/3)+1]:
+		if sudokuGrid[row][col+1] and (sudokuGrid[row][col+1] > candidate) == ineqHori[row][int(2*(col-1)/3)+1]:
 				return False
 	else:
-		if sudokuGrid[row][col-1]:
-			if (candidate > sudokuGrid[row][col-1]) == ineqHori[row][int(2*(col-2)/3)+1]:
+		if sudokuGrid[row][col-1] and (candidate > sudokuGrid[row][col-1]) == ineqHori[row][int(2*(col-2)/3)+1]:
 				return False
 	
 	rowMod = row%3
@@ -228,7 +224,7 @@ def solveSudoku(firstCases=[]):
 				else:
 					col = 8
 					row -= 1
-					if row < 0 or (row == 0 and col < len(firstCases)-1):
+					if (row == 0 and col < len(firstCases)-1) or row < 0:
 						#print("Exiting for values "+str(firstCases[0])+", "+str(firstCases[1]))
 						return 0
 				sudokuGrid[row][col] = 0
@@ -244,7 +240,7 @@ if __name__ == '__main__':
 	for x in range(1, 10):
 		for y in range(1, 10):
 			for z in range(1, 10):
-				if len(set([x, y, z])) == len([x, y, z]):
+				if len(set([x, y, z])) == 3:
 					processOrder.append([x, y, z])
 	random.shuffle(processOrder)
 	pool = Pool(processes=8)
@@ -255,6 +251,8 @@ if __name__ == '__main__':
 		if x:
 			visuGrid(x)
 			print("Minutes taken: "+str((time.time() - t)/60))
+			pool.close()
+			pool.terminate()
 			sys.exit(0)
 	
 	#print("Iterations: "+str(iterCount-1))
