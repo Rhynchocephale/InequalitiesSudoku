@@ -22,14 +22,6 @@ def squareOk(sudokuGrid, candidate, refRow, refCol):
 				return False
 	return True
 
-def printGrid(sudokuGrid):
-	gridString = ''
-	for row in range(len(sudokuGrid)):
-		for col in range(len(sudokuGrid[row])):
-			gridString += str(sudokuGrid[row][col])
-		gridString += '\n'
-	print(gridString)
-
 def visuGrid(grid):
 	if not grid:
 		return 0
@@ -83,14 +75,6 @@ def inequalityTest(sudokuGrid, ineqHori, ineqVert, candidate, row, col):
 			
 	return True
 	
-def possibilitiesLeft(possibleNumbers):
-	total = 0
-	for row in possibleNumbers:
-		for cell in row:
-			total += len(cell)
-			
-	return total
-	
 def checkInput(ineqHori, ineqVert):
 	if len(ineqHori) != 9:
 		print("Length of ineqHori: "+str(len(ineqHori)))
@@ -135,105 +119,85 @@ def readSource():
 	ineqHori = [ineqHori[i:i + 6] for i in range(0, len(ineqHori), 6)]
 
 	return ineqHori, ineqVert
-	
-'''subsquares = [[0, 0], [0, 3], [0, 6], [3, 0], [3, 3], [3, 6], [6, 0], [6, 3], [6, 6]]
-adjacentCases = {(0, 0): [[0, 1], [1, 0]], (0, 1): [[0, 0], [0, 2], [1, 1]], (0, 2): [[0, 1], [1, 2]],
-(1, 0): [[0, 0], [1, 1], [2, 0]], (1, 1): [[1, 0], [0, 1], [2, 1], [1, 2]], (1, 2): [[1, 1], [2, 0], [2, 2]],
-(2, 0): [[1, 0], [2, 1]], (2, 1): [[1, 1], [2, 0], [2, 2]], (2, 2): [[2, 1], [1, 2]]}
-
-def getIneq(row1, col1, row2, col2):
-	if row1 == row2: #if different columns, use ineqHori
-		#we have to turn the ineq around if col1 > col2
-		minCol = min(col1, col2)
-		return ineqHori[row1][2*minCol/3+minCol%3] == (col2 > col1)
-		
-	if col1 == col2: #if different rows, use ineqVert
-		#we have to turn the ineq around if row1 > row2
-		minRow = min(row1, row2)
-return ineqVert[2*minRow/3+minRow%3][col1] == (row2 > row1)
-
-def uncluesIneq():	
-	for subsquare in subsquares:
-		found = 1
-		while found > 0:
-			found = 0
-			i = 0
-			for relativeRow in range(3):
-				absoluteRow = relativeRow + subsquare[0]
-				for relativeCol in range(3):					
-					absoluteCol = relativeCol + subsquare[1]
-					
-					smallerThan = [10]
-					greaterThan = [0]
-					for relativeAdjacentCase in adjacentCases[(relativeRow, relativeCol)]:
-						#if case > adjacent 
-						if getIneq(absoluteRow, absoluteCol, absoluteAdjacentRow, absoluteAdjacentCol):
-							greaterThan.append(max(greaterThan)+1)
-						else:
-							smallerThan.append(min(smallerThan)-1)
-					if greaterThan:
-						for x in range(1,max(greaterThan)+1):
-							possibleNumbers[absoluteRow][absoluteCol]
-					if smallerThan:
-						for x in range(min(smallerThan),10):
-							if unclues[absoluteRow][absoluteCol] != emptyValue_unclues:
-								addUnclue(absoluteRow, absoluteCol, x)
-return 0'''
-
-#line by line. 0 for <, 1 for >
-#ineqHori = ["011001", "011000", "110101", "000011", "100001", "100110", "101110", "101111", "010110"]
-#line by line, 0 for ^, 1 for v
-#ineqVert = ["110110000", "011100111", "111001100", "000101011", "001000011", "101100010"]
-
-ineqHori, ineqVert = readSource()
-
-if not checkInput(ineqHori, ineqVert):
-	sys.exit(0)
-	
-ineqHori = transformInput(ineqHori)
-ineqVert = transformInput(ineqVert)
-
-
 
 def solveSudoku(firstCases=[]):
 	sudokuGrid = [[0 for _ in range(9)] for _ in range(9)]
-	possibleNumbers = [[list(range(1,10)) for _ in range(9)] for _ in range(9)]
+	possibleNumbers = [[set(range(1,10)) for _ in range(9)] for _ in range(9)]
 	
 	if firstCases:
-		possibleNumbers[0][0] = [firstCases[0]]
-		possibleNumbers[0][1] = [firstCases[1]]
-		possibleNumbers[0][2] = [firstCases[2]]
+		possibleNumbers[0][0] = set([firstCases[0]])
+		possibleNumbers[0][1] = set([firstCases[1]])
+		possibleNumbers[0][2] = set([firstCases[2]])
 	
 	row = 0
 	col = 0
 	previousLen = 9
 	while row < 9:
-		while col < 9:
-			while(possibleNumbers[row][col]):
-				candidate = random.choice(possibleNumbers[row][col])
-				possibleNumbers[row][col].remove(candidate)
-				if colOk(sudokuGrid, candidate, col) and rowOk(sudokuGrid, candidate, row) and squareOk(sudokuGrid, candidate, row, col) and inequalityTest(sudokuGrid, ineqHori, ineqVert, candidate, row, col):
-					sudokuGrid[row][col] = candidate
-					#print(row, col, possibleNumbers[row][col])
-					col += 1
-					break
-			else:
-				possibleNumbers[row][col] = list(range(1,10))
-				if col:
-					col -= 1
-				else:
-					col = 8
-					row -= 1
-					if (row == 0 and col < len(firstCases)-1) or row < 0:
-						#print("Exiting for values "+str(firstCases[0])+", "+str(firstCases[1]))
-						return 0
-				sudokuGrid[row][col] = 0
-		col = 0
-		row += 1
+		while(possibleNumbers[row][col]):
+			candidate = possibleNumbers[row][col].pop()
+			if colOk(sudokuGrid, candidate, col) and rowOk(sudokuGrid, candidate, row) and squareOk(sudokuGrid, candidate, row, col) and inequalityTest(sudokuGrid, ineqHori, ineqVert, candidate, row, col):
+				sudokuGrid[row][col] = candidate
+				#print(row, col, possibleNumbers[row][col])
+				row, col = nextStep(row, col)
+				break
+		else:
+			possibleNumbers[row][col] = set(range(1,10))
+			row, col = backtrack(row, col)
+			if row == 0 and col < len(firstCases)-1:
+				return 0
+			sudokuGrid[row][col] = 0
 
 	return sudokuGrid
+	
+#Moves subsquare by subsquare, backwards
+def backtrack(row, col):
+	if col%3:		#col 124578
+		return(row, col-1)
+	elif col==0:
+		if row==0:
+			return(row, -1)
+		elif row%3:
+			return(row-1, col+2)
+		else:
+			return(row-1, 8)
+	#col 36
+	elif row%3:
+		return(row-1, col+2)
+	else:
+		return(row+2, col-1)
+
+#Moves subsquare by subsquare, forwards
+def nextStep(row, col):
+	if (col+1)%3:	#col 013467
+		return(row, col+1)
+	elif col==8:
+		if row==8:
+			return(9,col)
+		elif (row+1)%3:
+			return(row+1, col-2)
+		else:
+			return(row+1, 0)
+	#col 25
+	elif (row+1)%3:
+		return(row+1, col-2)
+	else:
+		return(row-2, col+1)
+			
 
 if __name__ == '__main__':
+	#line by line. 0 for <, 1 for >
+	#ineqHori = ["011001", "011000", "110101", "000011", "100001", "100110", "101110", "101111", "010110"]
+	#line by line, 0 for ^, 1 for v
+	#ineqVert = ["110110000", "011100111", "111001100", "000101011", "001000011", "101100010"]
+
+	ineqHori, ineqVert = readSource()
+
+	if not checkInput(ineqHori, ineqVert):
+		sys.exit(0)
+		
+	ineqHori = transformInput(ineqHori)
+	ineqVert = transformInput(ineqVert)
+	
 	t = time.time()
 	
 	processOrder = []
@@ -242,7 +206,7 @@ if __name__ == '__main__':
 			for z in range(1, 10):
 				if len(set([x, y, z])) == 3:
 					processOrder.append([x, y, z])
-	random.shuffle(processOrder)
+	#random.shuffle(processOrder)
 	pool = Pool(processes=8)
 	i = len(processOrder)
 	for x in pool.imap_unordered(solveSudoku, processOrder):
@@ -250,9 +214,8 @@ if __name__ == '__main__':
 		i-=1
 		if x:
 			visuGrid(x)
-			print("Minutes taken: "+str((time.time() - t)/60))
+			t2 = time.time()
+			print(str(int((t2 - t)//60)) + " mn "+str(int(t2-t)%60)+" s.")
 			pool.close()
 			pool.terminate()
 			sys.exit(0)
-	
-	#print("Iterations: "+str(iterCount-1))
